@@ -26,3 +26,7 @@ Content-Type: application/json
     "title": "Empire State Building 🗼",
     "description": "One of the most famous skyscrapers in the world!"
 }
+
+###
+DELETE http://localhost:5000/api/places/p1
+Content-Type: application/json
