@@ -1,0 +1,19 @@
+GET http://localhost:5000/api/places/p1
+
+###
+GET http://localhost:5000/api/places/user/u1
+
+###
+POST http://localhost:5000/api/places
+Content-Type: application/json
+
+{
+    "title": "Willow River State Park",
+    "description": "3,000-acre riverside park encompassing Little Falls Lake with a waterfall, swimming & canoeing.",
+    "location": {
+        "lat":"45.0165709",
+        "lng":"-92.6876804"
+    },
+    "address":"1034 Co Hwy A, Hudson, WI 54016",
+    "creator":"u2"
+}

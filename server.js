@@ -7,7 +7,8 @@ const placesRoutes = require('./routes/places-routes');
 
 // MIDDLEWARE
 const app = express();
-app.use(bodyParser.urlencoded({ extended: true }));
+app.use(bodyParser.json());
+// app.use(bodyParser.urlencoded({ extended: true }));
 
 app.use('/api/places', placesRoutes);
 

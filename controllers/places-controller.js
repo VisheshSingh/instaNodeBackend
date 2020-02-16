@@ -1,3 +1,4 @@
+const uuid = require('uuid/v4');
 const HttpError = require('../models/HttpError');
 
 const DUMMY_PLACES = [
@@ -42,5 +43,21 @@ const getPlaceByUserId = (req, res, next) => {
   res.json({ place });
 };
 
+const createPlace = (req, res, next) => {
+  const { title, description, coordinates, address, creator } = req.body;
+
+  const newPlace = {
+    id: uuid(),
+    title,
+    description,
+    location: coordinates,
+    address,
+    creator
+  };
+
+  res.status(201).json({ place: newPlace });
+};
+
 exports.getPlaceById = getPlaceById;
 exports.getPlaceByUserId = getPlaceByUserId;
+exports.createPlace = createPlace;
