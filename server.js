@@ -4,6 +4,7 @@ const bodyParser = require('body-parser');
 
 // OWN ROUTES
 const placesRoutes = require('./routes/places-routes');
+const HttpError = require('./models/HttpError');
 
 // MIDDLEWARE
 const app = express();
@@ -11,6 +12,11 @@ app.use(bodyParser.json());
 // app.use(bodyParser.urlencoded({ extended: true }));
 
 app.use('/api/places', placesRoutes);
+
+app.use((req, res, next) => {
+  const error = new HttpError('Could not find the requested route 🚫');
+  throw error;
+});
 
 // GRACEFUL ERROR HANDLING
 app.use((err, req, res, next) => {
