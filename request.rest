@@ -17,3 +17,12 @@ Content-Type: application/json
     "address":"1034 Co Hwy A, Hudson, WI 54016",
     "creator":"u2"
 }
+
+###
+PATCH http://localhost:5000/api/places/p1
+Content-Type: application/json
+
+{
+    "title": "Empire State Building 🗼",
+    "description": "One of the most famous skyscrapers in the world!"
+}

@@ -54,10 +54,35 @@ const createPlace = (req, res, next) => {
     address,
     creator
   };
-
+  DUMMY_PLACES.push(newPlace);
   res.status(201).json({ place: newPlace });
+};
+
+const updatePlace = (req, res, next) => {
+  const { title, description } = req.body;
+  const placeId = req.params.pid;
+  const updatedPlace = { ...DUMMY_PLACES.find(p => p.id === placeId) };
+  const placeIndex = DUMMY_PLACES.findIndex(p => p.id === placeId);
+  console.log(updatedPlace, placeIndex);
+
+  if (!updatedPlace) {
+    const error = new HttpError(
+      ' Could not update the place with place id 😑',
+      404
+    );
+    throw error;
+  }
+
+  updatedPlace.title = title;
+  updatedPlace.description = description;
+  //   console.log(updatedPlace);
+
+  DUMMY_PLACES[placeIndex] = updatedPlace;
+
+  res.status(200).json({ place: updatedPlace });
 };
 
 exports.getPlaceById = getPlaceById;
 exports.getPlaceByUserId = getPlaceByUserId;
 exports.createPlace = createPlace;
+exports.updatePlace = updatePlace;
