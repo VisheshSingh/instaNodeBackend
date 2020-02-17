@@ -35,7 +35,7 @@ const getPlaceById = async (req, res, next) => {
       ' Could not find the place with place id 😑',
       404
     );
-    throw error;
+    return next(error);
   }
 
   res.json({ place: place.toObject({ getters: true }) });
@@ -104,7 +104,9 @@ const updatePlace = async (req, res, next) => {
 
   if (!errors.isEmpty()) {
     console.log(errors);
-    throw new HttpError('Invalid inputs passed, please check your data', 422);
+    return next(
+      new HttpError('Invalid inputs passed, please check your data', 422)
+    );
   }
 
   const { title, description } = req.body;
@@ -125,7 +127,7 @@ const updatePlace = async (req, res, next) => {
       ' Could not update the place with place id 😑',
       404
     );
-    throw error;
+    return next(error);
   }
 
   place.title = title;
@@ -149,13 +151,15 @@ const deletePlace = async (req, res, next) => {
   try {
     place = await Places.findById(placeId);
   } catch (error) {
-    return next( new HttpError('Something went wrong, could not delete the place 😓'));
+    return next(
+      new HttpError('Something went wrong, could not delete the place 😓')
+    );
   }
 
   try {
-    await place.remove()
+    await place.remove();
   } catch (error) {
-    return next(new HttpError('Could not find a place to delete 🥱'))
+    return next(new HttpError('Could not find a place to delete 🥱'));
   }
 
   res.status(200).json({ message: 'Deleted place ✂' });
