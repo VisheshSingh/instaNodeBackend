@@ -1,6 +1,7 @@
 // THIRD-PARTY IMPORTS
 const express = require('express');
 const bodyParser = require('body-parser');
+const mongoose = require('mongoose');
 
 // OWN ROUTES
 const placesRoutes = require('./routes/places-routes');
@@ -30,4 +31,14 @@ app.use((err, req, res, next) => {
 });
 
 const port = process.env.PORT || 5000;
-app.listen(port, () => console.log(`Server running on port ${port}...`));
+mongoose
+  .connect(
+    'mongodb+srv://test123:test123@cluster0-t0uam.mongodb.net/places?retryWrites=true&w=majority',
+    { useNewUrlParser: true, useUnifiedTopology: true }
+  )
+  .then(() => {
+    app.listen(port, () => console.log(`Server running on port ${port}...`));
+  })
+  .catch(err => {
+    console.log('Error: ', err);
+  });
