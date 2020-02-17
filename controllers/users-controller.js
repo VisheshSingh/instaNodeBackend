@@ -12,8 +12,18 @@ let users = [
   }
 ];
 
-const getUsers = (req, res, next) => {
-  res.json({ users: users });
+const getUsers = async (req, res, next) => {
+  let users;
+
+  try {
+    users = await User.find({}, '-password');
+  } catch (error) {
+    return next(new HttpError('Fetching users failed!', 500));
+  }
+
+  return res.json({
+    users: users.map(user => user.toObject({ getters: true }))
+  });
 };
 
 const signup = async (req, res, next) => {
@@ -25,7 +35,7 @@ const signup = async (req, res, next) => {
     );
   }
 
-  const { name, email, password, places } = req.body;
+  const { name, email, password } = req.body;
   let existingUser;
 
   try {
@@ -44,7 +54,7 @@ const signup = async (req, res, next) => {
     name,
     email,
     password,
-    places,
+    places: [],
     image:
       'https://encrypted-tbn0.gstatic.com/images?q=tbn%3AANd9GcQaO6-kArN9ZxMm_vbTfrslmI1xgqzN9boTsnI3Nh_c0HYr-urw'
   });
