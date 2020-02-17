@@ -1,9 +1,11 @@
 const uuid = require('uuid/v4');
 const HttpError = require('../models/HttpError');
 const { validationResult } = require('express-validator');
+const mongoose = require('mongoose');
 
 const getCoordsFromAddress = require('../utils/location');
 const Places = require('../models/places');
+const User = require('../models/user');
 
 let DUMMY_PLACES = [
   {
@@ -19,6 +21,7 @@ let DUMMY_PLACES = [
   }
 ];
 
+// GET PLACE BY PLACE ID
 const getPlaceById = async (req, res, next) => {
   const placeId = req.params.pid;
 
@@ -41,6 +44,7 @@ const getPlaceById = async (req, res, next) => {
   res.json({ place: place.toObject({ getters: true }) });
 };
 
+// GET PLACE BY USER ID
 const getPlacesByUserId = async (req, res, next) => {
   const userId = req.params.uid;
 
@@ -62,6 +66,7 @@ const getPlacesByUserId = async (req, res, next) => {
   res.json({ places: places.map(place => place.toObject({ getters: true })) });
 };
 
+// CREATE PLACE
 const createPlace = async (req, res, next) => {
   const errors = validationResult(req);
 
@@ -90,8 +95,27 @@ const createPlace = async (req, res, next) => {
     creator
   });
 
+  let user;
+
   try {
-    await newPlace.save();
+    user = await User.findById(creator);
+  } catch (error) {
+    return new HttpError('Something went wrong, creating place failed', 500);
+  }
+
+  if (!user) {
+    return new HttpError('Could not find the user with the specified id', 404);
+  }
+
+  console.log(user);
+
+  try {
+    const sess = await mongoose.startSession(); // CREATE MONGOOSE SESSION
+    sess.startTransaction(); // START TRANSACTION
+    await newPlace.save({ session: sess }); // SAVE PLACE IN SESSION
+    user.places.push(newPlace); // TIE CREATOR TO A PLACE (ADD PLACE ID TO USER)
+    await user.save({ session: sess }); // SAVE USER
+    await sess.commitTransaction(); // COMMIT TRANSAFCTION
   } catch (error) {
     const err = new HttpError('Could not save the place in DB');
     return next(err);
@@ -99,6 +123,7 @@ const createPlace = async (req, res, next) => {
   res.status(201).json({ place: newPlace });
 };
 
+// UPDATE PLACE
 const updatePlace = async (req, res, next) => {
   const errors = validationResult(req);
 
@@ -144,6 +169,7 @@ const updatePlace = async (req, res, next) => {
   res.status(200).json({ place: place.toObject({ getters: true }) });
 };
 
+// DELETE PLACE
 const deletePlace = async (req, res, next) => {
   const placeId = req.params.pid;
 
