@@ -19,9 +19,16 @@ let DUMMY_PLACES = [
   }
 ];
 
-const getPlaceById = (req, res, next) => {
+const getPlaceById = async (req, res, next) => {
   const placeId = req.params.pid;
-  const place = DUMMY_PLACES.find(p => p.id === placeId);
+
+  let place;
+  try {
+    place = await Places.findById(placeId);
+  } catch (error) {
+    const err = new HttpError('Failed to retrieve data 😯', 500);
+    return next(err);
+  }
 
   if (!place) {
     const error = new HttpError(
@@ -31,12 +38,20 @@ const getPlaceById = (req, res, next) => {
     throw error;
   }
 
-  res.json({ place });
+  res.json({ place: place.toObject({ getters: true }) });
 };
 
-const getPlacesByUserId = (req, res, next) => {
+const getPlacesByUserId = async (req, res, next) => {
   const userId = req.params.uid;
-  const places = DUMMY_PLACES.filter(p => p.creator === userId);
+
+  let places;
+
+  try {
+    places = await Places.find({ creator: userId });
+  } catch (error) {
+    const err = new HttpError('Failed to fetch the places', 500);
+    return next(err);
+  }
 
   if (!places || places.length === 0) {
     return next(
@@ -44,7 +59,7 @@ const getPlacesByUserId = (req, res, next) => {
     );
   }
 
-  res.json({ places });
+  res.json({ places: places.map(place => place.toObject({ getters: true })) });
 };
 
 const createPlace = async (req, res, next) => {
@@ -73,8 +88,8 @@ const createPlace = async (req, res, next) => {
     location: coordinates,
     address,
     creator
-  })
-  
+  });
+
   try {
     await newPlace.save();
   } catch (error) {
