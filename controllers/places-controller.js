@@ -66,6 +66,13 @@ const createPlace = (req, res, next) => {
 };
 
 const updatePlace = (req, res, next) => {
+  const errors = validationResult(req);
+
+  if (!errors.isEmpty()) {
+    console.log(errors);
+    throw new HttpError('Invalid inputs passed, please check your data', 422);
+  }
+
   const { title, description } = req.body;
   const placeId = req.params.pid;
   const updatedPlace = { ...DUMMY_PLACES.find(p => p.id === placeId) };
@@ -91,6 +98,9 @@ const updatePlace = (req, res, next) => {
 
 const deletePlace = (req, res, next) => {
   const placeId = req.params.pid;
+  if (!DUMMY_PLACES.findIndex(p => p.id === placeId)) {
+    throw new HttpError('Could not find a place to delete 🥱');
+  }
   const placeIndex = DUMMY_PLACES.findIndex(p => p.id === placeId);
 
   DUMMY_PLACES = DUMMY_PLACES.splice(1, placeIndex);
