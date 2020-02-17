@@ -49,3 +49,7 @@ Content-Type: application/json
     "email":"test@test.com",
     "password":"test123"
 }
+
+###
+DELETE http://localhost:5000/api/places/5e4acfdc46416738946c5045
+Content-Type: application/json

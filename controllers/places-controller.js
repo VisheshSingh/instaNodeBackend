@@ -100,11 +100,15 @@ const createPlace = async (req, res, next) => {
   try {
     user = await User.findById(creator);
   } catch (error) {
-    return new HttpError('Something went wrong, creating place failed', 500);
+    return next(
+      new HttpError('Something went wrong, creating place failed', 500)
+    );
   }
 
   if (!user) {
-    return new HttpError('Could not find the user with the specified id', 404);
+    return next(
+      new HttpError('Could not find the user with the specified id', 404)
+    );
   }
 
   console.log(user);
@@ -175,15 +179,24 @@ const deletePlace = async (req, res, next) => {
 
   let place;
   try {
-    place = await Places.findById(placeId);
+    place = await Places.findById(placeId).populate('creator');
   } catch (error) {
     return next(
       new HttpError('Something went wrong, could not delete the place 😓')
     );
   }
 
+  if (!place) {
+    return next(new HttpError('Could not find a place with specified id', 404));
+  }
+
   try {
-    await place.remove();
+    const sess = await mongoose.startSession();
+    sess.startTransaction();
+    await place.remove({ session: sess });
+    place.creator.places.pull(place);
+    await place.creator.save({ session: sess });
+    await sess.commitTransaction();
   } catch (error) {
     return next(new HttpError('Could not find a place to delete 🥱'));
   }
