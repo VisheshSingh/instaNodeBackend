@@ -57,11 +57,17 @@ const signup = async (req, res, next) => {
   res.status(201).json({ user: newUser.toObject({ getters: true }) });
 };
 
-const login = (req, res, next) => {
+const login = async (req, res, next) => {
   const { email, password } = req.body;
-  const user = users.find(u => u.email === email);
+  let existingUser;
 
-  if (!user || user.password !== password) {
+  try {
+    existingUser = await User.findOne({ email: email });
+  } catch (error) {
+    return next(new HttpError('Login failed, check your credentials', 500));
+  }
+
+  if (!existingUser || existingUser.password !== password) {
     return next(new HttpError('Please check your credentials! 👀', 401));
   }
 
