@@ -1,6 +1,7 @@
 const uuid = require('uuid/v4');
 const HttpError = require('../models/HttpError');
 const { validationResult } = require('express-validator');
+const User = require('../models/user');
 
 let users = [
   {
@@ -15,29 +16,45 @@ const getUsers = (req, res, next) => {
   res.json({ users: users });
 };
 
-const signup = (req, res, next) => {
+const signup = async (req, res, next) => {
   const errors = validationResult(req);
 
   if (!errors.isEmpty()) {
-    throw new HttpError('Invalid inputs passed, please check your data', 422);
+    return next(
+      new HttpError('Invalid inputs passed, please check your data', 422)
+    );
   }
 
-  const { name, email, password } = req.body;
-  const hasUser = users.find(u => u.email === email);
+  const { name, email, password, places } = req.body;
+  let existingUser;
 
-  if (hasUser) {
-    throw new HttpError('User already exists! 🧐', 422);
+  try {
+    existingUser = await User.findOne({ email: email });
+  } catch (error) {
+    return next(
+      new HttpError('Something went wrong, check your credentials', 500)
+    );
   }
 
-  const newUser = {
-    id: uuid(),
+  if (existingUser) {
+    return next(new HttpError('User already exists! 🧐', 422));
+  }
+
+  const newUser = new User({
     name,
     email,
-    password
-  };
+    password,
+    places,
+    image:
+      'https://encrypted-tbn0.gstatic.com/images?q=tbn%3AANd9GcQaO6-kArN9ZxMm_vbTfrslmI1xgqzN9boTsnI3Nh_c0HYr-urw'
+  });
 
-  users.push(newUser);
-  res.status(201).json({ user: newUser });
+  try {
+    await newUser.save();
+  } catch (error) {
+    return next(new HttpError('Could not save the user in DB', 500));
+  }
+  res.status(201).json({ user: newUser.toObject({ getters: true }) });
 };
 
 const login = (req, res, next) => {
