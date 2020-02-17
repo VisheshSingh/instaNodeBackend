@@ -3,6 +3,7 @@ const HttpError = require('../models/HttpError');
 const { validationResult } = require('express-validator');
 
 const getCoordsFromAddress = require('../utils/location');
+const Places = require('../models/places');
 
 let DUMMY_PLACES = [
   {
@@ -65,15 +66,21 @@ const createPlace = async (req, res, next) => {
     return next(err);
   }
 
-  const newPlace = {
-    id: uuid(),
+  const newPlace = new Places({
     title,
     description,
+    image: 'https://media2.trover.com/T/5459955326c48d783f000450/fixedw.jpg',
     location: coordinates,
     address,
     creator
-  };
-  DUMMY_PLACES.push(newPlace);
+  })
+  
+  try {
+    await newPlace.save();
+  } catch (error) {
+    const err = new HttpError('Could not save the place in DB');
+    return next(err);
+  }
   res.status(201).json({ place: newPlace });
 };
 
